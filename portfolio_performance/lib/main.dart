@@ -1,30 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:portfolio_performance/securities_list.dart';
 
 void main() {
   runApp(const MyApp());
-}
-
-class PRSecurity {
-  final String isin;
-  final String uuid;
-  final String name;
-
-  const PRSecurity({
-    required this.isin,
-    required this.uuid,
-    required this.name,
-  });
-
-  factory PRSecurity.fromJson(Map<String, dynamic> json) {
-    return PRSecurity(
-      isin: json['isin'],
-      uuid: json['uuid'],
-      name: json['name'],
-    );
-  }
 }
 
 class MyApp extends StatelessWidget {
@@ -71,39 +49,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  late Future<PRSecurity> futureSecurity;
-
   @override
   void initState() {
     super.initState();
-    futureSecurity = fetchData();
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter += 2;
-    });
-  }
-
-  Future<PRSecurity> fetchData() async {
-    var response = await http.get(Uri.parse(
-        'https://api.portfolio-report.net/securities/uuid/c2df7d8f21094bbfab1edd3a645b0c14'));
-
-    if (response.statusCode == 200) {
-      // If the server did return a 200 OK response,
-      // then parse the JSON.
-      return PRSecurity.fromJson(jsonDecode(response.body));
-    } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Failed to load album');
-    }
   }
 
   @override
@@ -149,23 +97,10 @@ class _MyHomePageState extends State<MyHomePage> {
             //   '$_counter',
             //   style: Theme.of(context).textTheme.headlineMedium,
             // ),
-            Container(
-              child: FutureBuilder(
-                  future: futureSecurity,
-                  builder: (context, snapshot) {
-                    switch (snapshot.connectionState) {
-                      case ConnectionState.none:
-                      case ConnectionState.active:
-                      case ConnectionState.waiting:
-                        return Text('Awaiting result...');
-                      case ConnectionState.done:
-                        if (snapshot.hasData) {
-                          return Text(snapshot.data!.name);
-                        }
-                        return Text('Failed to load data');
-                    }
-                  }),
-            )
+            SecuritiesList(securities: const [
+              'c2df7d8f21094bbfab1edd3a645b0c14',
+              'dd6ee75d413643ebbf509f5d3c8dbde6'
+            ]),
             // Expanded(
             //   child: SizedBox(
             //     child: ListView(
@@ -189,11 +124,11 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _incrementCounter,
+      //   tooltip: 'Increment',
+      //   child: const Icon(Icons.add),
+      // ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
