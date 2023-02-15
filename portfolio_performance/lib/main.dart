@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:portfolio_performance/pr_security.dart';
 import 'package:portfolio_performance/securities_list.dart';
+import 'package:xml/xml.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,13 +29,13 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.green,
       ),
-      home: const MyHomePage(title: 'Portfolio Performance'),
+      home: MyHomePage(title: 'Portfolio Performance'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  MyHomePage({super.key, required this.title});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -43,15 +47,43 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
 
   final String title;
+  List<PRSecurity?> securities = List.empty();
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late XmlDocument portfolioXml;
+
   @override
   void initState() {
     super.initState();
+
+    // this won't work on web (no file i/o allowed in browser)
+    final file = File(
+        '/Users/skreiser/Development/portfolio-performance-flutter-mobile-app/portfolio_performance/portfolio.xml');
+    portfolioXml = XmlDocument.parse(file.readAsStringSync());
+    // print portfolio xml version
+    print(portfolioXml.rootElement.getElement('version'));
+    var securitiesXml =
+        portfolioXml.rootElement.getElement('securities')?.children;
+    if (securitiesXml != null) {
+      widget.securities = securitiesXml
+          .map((sec) {
+            if (sec.getElement('uuid')?.text != null) {
+              return PRSecurity(
+                uuid: sec.getElement('uuid')?.text,
+                isin: sec.getElement('isin')?.text,
+                name: sec.getElement('name')?.text,
+                onlineId: sec.getElement('onlineId')?.text,
+              );
+            }
+            return null;
+          })
+          .where((element) => element != null)
+          .toList();
+    }
   }
 
   @override
@@ -97,10 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
             //   '$_counter',
             //   style: Theme.of(context).textTheme.headlineMedium,
             // ),
-            SecuritiesList(securities: const [
-              'c2df7d8f21094bbfab1edd3a645b0c14',
-              'dd6ee75d413643ebbf509f5d3c8dbde6'
-            ]),
+            SecuritiesList(securities: widget.securities),
             // Expanded(
             //   child: SizedBox(
             //     child: ListView(
