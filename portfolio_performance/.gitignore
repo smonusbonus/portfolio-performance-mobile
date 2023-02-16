@@ -45,3 +45,4 @@ app.*.map.json
 
 # misc
 portfolio.xml
+portfolio.*.xml

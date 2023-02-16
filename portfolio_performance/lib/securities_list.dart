@@ -44,30 +44,23 @@ class _SecuritiesListState extends State<SecuritiesList> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: _fetchSecurities(widget.securities),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.none:
-            case ConnectionState.active:
-            case ConnectionState.waiting:
-              return Text('Awaiting result...');
-            case ConnectionState.done:
-              if (snapshot.hasData) {
-                return SizedBox(
-                    height: 600.0,
-                    child: ListView(
-                        children: snapshot.data!
-                            .toList()
-                            .map((e) => Container(
-                                height: 50,
-                                child: Center(
-                                  child: Text('${e?.name} - ${e?.isin}'),
-                                )))
-                            .toList()));
-              }
-              return Text('Failed to load data');
-          }
+    print(widget.securities.length);
+    return ListView.builder(
+        padding: EdgeInsets.all(12),
+        scrollDirection: Axis.vertical,
+        itemCount: widget.securities.length,
+        // separatorBuilder: (context, index) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          return buildListItem(index);
         });
+  }
+
+  Widget buildListItem(int index) {
+    return Container(
+      width: double.infinity,
+      height: 30,
+      child: Text(
+          '${widget.securities[index]?.name} - ${widget.securities[index]?.isin}'),
+    );
   }
 }

@@ -1,13 +1,13 @@
 class PRSecurity {
-  String? uuid;
+  String uuid;
+  String name;
   String? isin;
-  String? name;
   String? onlineId;
 
   PRSecurity({
-    this.uuid,
+    required this.uuid,
+    required this.name,
     this.isin,
-    this.name,
     this.onlineId,
   });
 
