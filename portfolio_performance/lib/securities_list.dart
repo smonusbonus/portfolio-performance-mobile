@@ -1,13 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:portfolio_performance/pr_security.dart';
+import 'package:portfolio_performance/security.dart';
 
 class SecuritiesList extends StatefulWidget {
   const SecuritiesList({super.key, required this.securities});
 
-  final List<PRSecurity?> securities;
+  final List<Security?> securities;
 
   @override
   State<SecuritiesList> createState() => _SecuritiesListState();
@@ -19,29 +16,6 @@ class _SecuritiesListState extends State<SecuritiesList> {
     super.initState();
   }
 
-  Future<PRSecurity> _fetchSecurity(PRSecurity prSecurity) async {
-    if (prSecurity.onlineId != null) {
-      var response = await http.get(Uri.parse(
-          'https://api.portfolio-report.net/securities/uuid/${prSecurity.onlineId}'));
-
-      if (response.statusCode == 200) {
-        // If the server did return a 200 OK response,
-        // then parse the JSON.
-        return PRSecurity.fromJson(jsonDecode(response.body));
-      } else {
-        // If the server did not return a 200 OK response,
-        // then throw an exception.
-        throw Exception('Failed to load security');
-      }
-    }
-    return prSecurity;
-  }
-
-  Future<List<PRSecurity?>> _fetchSecurities(List<PRSecurity?> prSecurities) {
-    // var securities = prSecurities.map((prSec) => _fetchSecurity(prSec));
-    return Future.value(prSecurities);
-  }
-
   @override
   Widget build(BuildContext context) {
     print(widget.securities.length);
@@ -49,10 +23,21 @@ class _SecuritiesListState extends State<SecuritiesList> {
         padding: EdgeInsets.all(12),
         scrollDirection: Axis.vertical,
         itemCount: widget.securities.length,
-        // separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           return buildListItem(index);
         });
+  }
+
+  String _getPrice(Security? sec) {
+    double? price;
+    if (sec != null && sec.latestPrice != null) {
+      price = sec.latestPrice! / 100000000;
+      if (sec.currency != null) {
+        return '${price.toStringAsFixed(2)} ${sec.currency}';
+      }
+      return price.toString();
+    }
+    return '';
   }
 
   Widget buildListItem(int index) {
@@ -60,7 +45,7 @@ class _SecuritiesListState extends State<SecuritiesList> {
       width: double.infinity,
       height: 30,
       child: Text(
-          '${widget.securities[index]?.name} - ${widget.securities[index]?.isin}'),
+          '${widget.securities[index]?.name} - ${_getPrice(widget.securities[index])}'),
     );
   }
 }

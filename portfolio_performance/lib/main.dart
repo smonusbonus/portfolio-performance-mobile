@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:portfolio_performance/pr_security.dart';
 import 'package:portfolio_performance/securities_list.dart';
+import 'package:portfolio_performance/security.dart';
 import 'package:xml/xml.dart';
 
 void main() {
@@ -47,7 +47,7 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
 
   final String title;
-  List<PRSecurity?> securities = List.empty();
+  List<Security?> securities = List.empty();
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -68,19 +68,23 @@ class _MyHomePageState extends State<MyHomePage> {
     print(portfolioXml.rootElement.getElement('version'));
   }
 
-  List<PRSecurity?> _getSecurities() {
+  List<Security?> _getSecurities() {
     var securitiesXml =
         portfolioXml.rootElement.getElement('securities')?.children;
     if (securitiesXml != null) {
-      List<PRSecurity?> securities = securitiesXml
+      List<Security?> securities = securitiesXml
           .map((sec) {
+            var latestPrice = sec.getElement('latest')?.getAttribute('v');
+
             if (sec.getElement('uuid')?.text != null &&
                 sec.getElement('name')?.text != null) {
-              return PRSecurity(
+              return Security(
                 uuid: sec.getElement('uuid')!.text,
-                name: sec.getElement('name')!.text,
+                name: sec.getElement('name')!.text.trim(),
+                currency: sec.getElement('currencyCode')?.text,
                 isin: sec.getElement('isin')?.text,
                 onlineId: sec.getElement('onlineId')?.text,
+                latestPrice: int.tryParse(latestPrice ?? ''),
               );
             }
             return null;
