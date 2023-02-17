@@ -51,21 +51,59 @@ class _SecuritiesListState extends State<SecuritiesList> {
     return '';
   }
 
+  num _getPriceChange(Security? sec) {
+    if (sec != null &&
+        sec.latestPrice != null &&
+        sec.previousDayPrice != null) {
+      var diff = sec.latestPrice! - sec.previousDayPrice!;
+      var isNegative = diff < 0;
+      print(diff);
+      var result = (diff.abs() / sec.latestPrice!) * 100;
+
+      print(result);
+      return isNegative ? result * -1 : result;
+    }
+    return 0;
+  }
+
   Widget buildListItem(int index) {
+    var priceChange = _getPriceChange(widget.securities[index]);
+
     return Container(
         width: double.infinity,
         height: 50,
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Expanded(
-            flex: 7,
-            child: Text('${widget.securities[index]?.name}',
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
+        child: Column(children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 7,
+                child: Row(
+                  children: [
+                    Text('${widget.securities[index]?.name}',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w400))
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(_getPrice(widget.securities[index]),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  Text(
+                    '${priceChange.toStringAsFixed(2)} %',
+                    style: TextStyle(
+                        color: priceChange >= 0 ? Colors.green : Colors.red),
+                  ),
+                ],
+              )
+            ],
           ),
-          Text(_getPrice(widget.securities[index]),
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
         ]));
   }
 }

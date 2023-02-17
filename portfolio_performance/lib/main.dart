@@ -64,8 +64,6 @@ class _MyHomePageState extends State<MyHomePage> {
     final file = File(
         '/Users/skreiser/Development/portfolio-performance-flutter-mobile-app/portfolio_performance/portfolio.xml');
     portfolioXml = XmlDocument.parse(file.readAsStringSync());
-    // print portfolio xml version
-    print(portfolioXml.rootElement.getElement('version'));
   }
 
   List<Security?> _getSecurities() {
@@ -74,7 +72,12 @@ class _MyHomePageState extends State<MyHomePage> {
     if (securitiesXml != null) {
       List<Security?> securities = securitiesXml
           .map((sec) {
-            var latestPrice = sec.getElement('latest')?.getAttribute('v');
+            var historicPrices = sec
+                    .getElement('prices')
+                    ?.children
+                    .reversed
+                    .where((node) => !(node is XmlText)) ??
+                [];
 
             if (sec.getElement('uuid')?.text != null &&
                 sec.getElement('name')?.text != null) {
@@ -84,7 +87,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 currency: sec.getElement('currencyCode')?.text,
                 isin: sec.getElement('isin')?.text,
                 onlineId: sec.getElement('onlineId')?.text,
-                latestPrice: int.tryParse(latestPrice ?? ''),
+                latestPrice: historicPrices.isNotEmpty
+                    ? int.tryParse(historicPrices.first.getAttribute('v') ?? '')
+                    : null,
+                previousDayPrice: historicPrices.isNotEmpty
+                    ? int.tryParse(
+                        historicPrices.elementAt(1).getAttribute('v') ?? '')
+                    : null,
               );
             }
             return null;
